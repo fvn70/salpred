@@ -25,18 +25,13 @@ def calc_lnr(X, y):
     lnr = LinearRegression()
     lnr.fit(X_train, y_train)
     pred = lnr.predict(X_test)
-    mp = mape(y_test, pred)
-    return mp
+    res = map(str, lnr.coef_)
+    print(', '.join(res))
 
 # read data
 data = pd.read_csv('../Data/data.csv')
 
-X = pd.DataFrame(data['rating'])
+X = pd.DataFrame(data).drop(columns='salary')
 y = data['salary']
-m_min = sys.maxsize
-for k in range(2, 4):
-    m = calc_lnr(X ** k, y)
-    if m < m_min:
-        m_min = m
+calc_lnr(X, y)
 
-print(round(m_min, 5))
