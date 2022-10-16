@@ -1,4 +1,5 @@
 import os
+import sys
 
 import numpy as np
 import requests
@@ -18,19 +19,24 @@ if 'data.csv' not in os.listdir('../Data'):
     r = requests.get(url, allow_redirects=True)
     open('../Data/data.csv', 'wb').write(r.content)
 
+def calc_lnr(X, y):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=100)
+
+    lnr = LinearRegression()
+    lnr.fit(X_train, y_train)
+    pred = lnr.predict(X_test)
+    mp = mape(y_test, pred)
+    return mp
+
 # read data
 data = pd.read_csv('../Data/data.csv')
 
-# write your code here
-X = data['rating']
+X = pd.DataFrame(data['rating'])
 y = data['salary']
-X = np.array(data['rating']).reshape(-1, 1)
-y = np.array(data['salary']).reshape(-1, 1)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=100)
+m_min = sys.maxsize
+for k in range(2, 4):
+    m = calc_lnr(X ** k, y)
+    if m < m_min:
+        m_min = m
 
-lnr = LinearRegression()
-lnr.fit(X_train, y_train)
-pred = lnr.predict(X_test)
-mape = mape(y_test, pred)
-
-print(round(lnr.intercept_[0], 5), round(lnr.coef_[0,0], 5), round(mape, 5))
+print(round(m_min, 5))
