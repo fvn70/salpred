@@ -25,13 +25,27 @@ def calc_lnr(X, y):
     lnr = LinearRegression()
     lnr.fit(X_train, y_train)
     pred = lnr.predict(X_test)
-    res = map(str, lnr.coef_)
-    print(', '.join(res))
+    mp = mape(y_test, pred)
+    return mp
 
 # read data
 data = pd.read_csv('../Data/data.csv')
 
 X = pd.DataFrame(data).drop(columns='salary')
 y = data['salary']
-calc_lnr(X, y)
+# print(X.head())
+# corr = X.corr()
+var_list = ['rating', 'age', 'experience']
+m_min = sys.maxsize
 
+for i in range(3):
+    X1 = X.drop(columns=var_list[i])
+    m = calc_lnr(X1, y)
+    if m < m_min:
+        m_min = m
+    X1 = X.drop(columns=[var_list[(i + 1) % 3], var_list[(i + 2) % 3]])
+    m = calc_lnr(X1, y)
+    if m < m_min:
+        m_min = m
+
+print(round(m_min, 5))
