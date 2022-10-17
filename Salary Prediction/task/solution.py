@@ -19,13 +19,17 @@ if 'data.csv' not in os.listdir('../Data'):
     r = requests.get(url, allow_redirects=True)
     open('../Data/data.csv', 'wb').write(r.content)
 
-def calc_lnr(X, y):
+def calc_lnr(X, y, y_val):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=100)
 
     lnr = LinearRegression()
     lnr.fit(X_train, y_train)
     pred = lnr.predict(X_test)
+    if y_val != 0:
+        y_val = y_train.median()
+    pred = np.where(pred < 0, y_val, pred)
     mp = mape(y_test, pred)
+    # print(round(mp, 5))
     return mp
 
 # read data
@@ -33,19 +37,10 @@ data = pd.read_csv('../Data/data.csv')
 
 X = pd.DataFrame(data).drop(columns='salary')
 y = data['salary']
-# print(X.head())
 # corr = X.corr()
 var_list = ['rating', 'age', 'experience']
-m_min = sys.maxsize
+drop_list = ['age', 'experience']
+m_0 = calc_lnr(X.drop(columns=drop_list), y, 0)
+m_1 = calc_lnr(X.drop(columns=drop_list), y, 1)
 
-for i in range(3):
-    X1 = X.drop(columns=var_list[i])
-    m = calc_lnr(X1, y)
-    if m < m_min:
-        m_min = m
-    X1 = X.drop(columns=[var_list[(i + 1) % 3], var_list[(i + 2) % 3]])
-    m = calc_lnr(X1, y)
-    if m < m_min:
-        m_min = m
-
-print(round(m_min, 5))
+print(round(min(m_0, m_1), 5))
